@@ -1,0 +1,9 @@
+========== BOOK REPORT ==========
+Total Books : 20
+Average Price : 899.75
+Highest Price : 1500.0
+Highest Price Book : Introduction to Algorithms
+Lowest Price : 550.0
+Lowest Price Book : Head First Java
+Total Quantity : 286
+Total Cost Of All Books : 237135.0
