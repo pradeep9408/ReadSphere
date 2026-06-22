@@ -4,6 +4,7 @@ import com.example.booksystem.model.Book;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import com.example.booksystem.constants.AppConstants;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,7 +20,7 @@ public class BookService {
 
         try {
 
-            ClassPathResource resource = new ClassPathResource("books_catalog.csv");
+            ClassPathResource resource = new ClassPathResource(AppConstants.BOOKS_CSV_FILE);
             BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()));
 
             br.readLine();

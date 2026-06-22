@@ -3,6 +3,7 @@ package com.example.booksystem.service;
 import com.example.booksystem.model.Book;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.example.booksystem.constants.AppConstants;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -69,7 +70,7 @@ public class ReportService {
 
             BufferedWriter bw =
                     new BufferedWriter(
-                            new FileWriter("report.txt"));
+                            new FileWriter(AppConstants.REPORT_FILE));
 
             bw.write("========== BOOK REPORT ==========");
             bw.newLine();
