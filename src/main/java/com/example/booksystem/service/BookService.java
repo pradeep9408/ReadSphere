@@ -1,5 +1,6 @@
 package com.example.booksystem.service;
 
+import com.example.booksystem.factory.BookFactory;
 import com.example.booksystem.model.Book;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -28,18 +29,18 @@ public class BookService {
 
             List<Book> books = br.lines()
                             .map(line -> line.split(","))
-                            .map(data -> Book.builder()
-                                            .id(Integer.parseInt(data[0]))
-                                            .bookName(data[1])
-                                            .authorName(data[2])
-                                            .category(data[3])
-                                            .publisher(data[4])
-                                            .price(Double.parseDouble(data[5]))
-                                            .quantity(Integer.parseInt(data[6]))
-                                            .publishedYear(Integer.parseInt(data[7]))
-                                            .isbn(data[8])
-                                            .language(data[9])
-                                    .build())
+                            .map(data -> BookFactory.createBook(
+                                            Integer.parseInt(data[0]),
+                                            data[1],
+                                            data[2],
+                                            data[3],
+                                            data[4],
+                                            Double.parseDouble(data[5]),
+                                            Integer.parseInt(data[6]),
+                                            Integer.parseInt(data[7]),
+                                            data[8],
+                                            data[9]
+                                    ))
                             .collect(Collectors.toList());
 
             log.info("Loaded {} books from CSV", books.size());

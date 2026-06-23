@@ -1,6 +1,10 @@
 package com.example.booksystem.service;
 
 import com.example.booksystem.model.Book;
+import com.example.booksystem.strategy.AuthorReportStrategy;
+import com.example.booksystem.strategy.CategoryReportStrategy;
+import com.example.booksystem.strategy.ReportContext;
+import com.example.booksystem.strategy.ReportStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.example.booksystem.constants.AppConstants;
@@ -25,6 +29,14 @@ public class ReportService {
         try {
 
             List<Book> books = bookService.getBooks();
+
+            ReportContext context = new ReportContext(new AuthorReportStrategy());
+            String report = context.generate(books);
+            log.info("Generated Author Report : {} ", report);
+
+            ReportContext context1 = new ReportContext(new CategoryReportStrategy());
+            String category_report = context.generate(books);
+            log.info("Generated Category Report : {} ", category_report);
 
             double averagePrice =
                     books.stream()
