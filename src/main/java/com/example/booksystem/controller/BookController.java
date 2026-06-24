@@ -8,6 +8,9 @@ import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @Slf4j
+@Validated
 @RequestMapping("books")
 public class BookController {
 
@@ -33,7 +37,10 @@ public class BookController {
     }
 
     @GetMapping("id")
-    public ResponseEntity<Book> getBookById(@RequestParam int id) {
+    public ResponseEntity<Book> getBookById(
+            @RequestParam
+            @Min(value=1, message = "Book id must be greater than 0")
+            int id) {
 
         Book book = bookService.getBookById(id);
 
@@ -45,7 +52,10 @@ public class BookController {
     }
 
     @GetMapping("author")
-    public ResponseEntity<List<Book>> getBookByAuthor(@RequestParam String authorName) {
+    public ResponseEntity<List<Book>> getBookByAuthor(
+            @RequestParam
+            @NotBlank(message = "Author name cannot be empty")
+            String authorName) {
 
         List<Book> books = bookService.getBookByAuthor(authorName);
 
@@ -57,7 +67,11 @@ public class BookController {
     }
 
     @GetMapping("category")
-    public ResponseEntity<List<Book>> getBookByCategory(@RequestParam String category) {
+    public ResponseEntity<List<Book>> getBookByCategory(
+            @RequestParam
+            @NotBlank(message = "Category cannot be empty")
+            String category) {
+
             List<Book> books = bookService.getBookByCategory(category);
 
             if(books.isEmpty()) {
