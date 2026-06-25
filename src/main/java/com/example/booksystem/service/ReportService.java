@@ -1,5 +1,6 @@
 package com.example.booksystem.service;
 
+import com.example.booksystem.dto.ReportResponse;
 import com.example.booksystem.model.Book;
 import com.example.booksystem.strategy.AuthorReportStrategy;
 import com.example.booksystem.strategy.CategoryReportStrategy;
@@ -111,5 +112,54 @@ public class ReportService {
 
             log.error("Error while generating report", e);
         }
+    }
+    public ReportResponse getReport() {
+
+        List<Book> books = bookService.getBooks();
+
+        double averagePrice = books.stream()
+                .mapToDouble(Book::getPrice)
+                .average()
+                .orElse(0);
+
+        double highestPrice = books.stream()
+                .mapToDouble(Book::getPrice)
+                .max()
+                .orElse(0);
+
+        double lowestPrice = books.stream()
+                .mapToDouble(Book::getPrice)
+                .min()
+                .orElse(0);
+
+        int totalQuantity = books.stream()
+                .mapToInt(Book::getQuantity)
+                .sum();
+
+        double totalCost = books.stream()
+                .mapToDouble(book ->
+                        book.getPrice() * book.getQuantity())
+                .sum();
+
+        String highestBook = books.stream()
+                .max(Comparator.comparing(Book::getPrice))
+                .map(Book::getBookName)
+                .orElse("N/A");
+
+        String lowestBook = books.stream()
+                .min(Comparator.comparing(Book::getPrice))
+                .map(Book::getBookName)
+                .orElse("N/A");
+
+        return ReportResponse.builder()
+                .totalBooks(books.size())
+                .averagePrice(averagePrice)
+                .highestPrice(highestPrice)
+                .highestPriceBook(highestBook)
+                .lowestPrice(lowestPrice)
+                .lowestPriceBook(lowestBook)
+                .totalQuantity(totalQuantity)
+                .totalCost(totalCost)
+                .build();
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class BookService {
                          new BufferedReader(
                                  new InputStreamReader(resource.getInputStream()))) {
 
-                br.readLine(); // Skip CSV header
+                br.readLine();
 
                 books = br.lines()
                         .map(line -> line.split(","))
@@ -48,7 +49,7 @@ public class BookService {
                                 data[8],
                                 data[9]
                         ))
-                        .toList();
+                        .collect(Collectors.toCollection(ArrayList::new));
 
                 log.info("Loaded {} books from CSV", books.size());
             }
@@ -107,5 +108,20 @@ public class BookService {
 
         return books.stream()
                 .collect(Collectors.groupingBy(Book::getAuthorName));
+    }
+
+    public boolean deleteBookById(int id) {
+
+        return books.removeIf(book -> book.getId() == id);
+    }
+
+    public boolean deleteBookByAuthor(String authorName) {
+
+        return books.removeIf(book -> book.getAuthorName() == authorName);
+    }
+
+    public boolean deleteBookByCategory(String category) {
+
+        return books.removeIf(book -> book.getCategory() == category);
     }
 }

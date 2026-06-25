@@ -1,5 +1,7 @@
 package com.example.booksystem.controller;
 
+import com.example.booksystem.dto.ApiResponse;
+import com.example.booksystem.dto.ReportResponse;
 import com.example.booksystem.model.Book;
 import com.example.booksystem.service.BookService;
 import com.example.booksystem.service.ReportService;
@@ -37,7 +39,7 @@ public class BookController {
     }
 
     @GetMapping("id")
-    public ResponseEntity<Book> getBookById(
+    public ResponseEntity<?> getBookById(
             @RequestParam
             @Min(value=1, message = "Book id must be greater than 0")
             int id) {
@@ -45,7 +47,7 @@ public class BookController {
         Book book = bookService.getBookById(id);
 
         if(book==null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Book not found"));
         }
         log.info("Loaded book by id : {} ", id);
         return ResponseEntity.ok(book);
@@ -111,6 +113,53 @@ public class BookController {
         }
         catch(Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate report");
+        }
+    }
+
+    @GetMapping("report/json")
+    public ResponseEntity<ReportResponse> getReport() {
+
+        return ResponseEntity.ok(
+                reportService.getReport());
+    }
+
+    @DeleteMapping("id")
+    public ResponseEntity<String> deleteBookById(@RequestParam int id) {
+
+        boolean deleted = bookService.deleteBookById(id);
+
+        if(deleted) {
+
+            return ResponseEntity.ok("Book Deleted successfully");
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found");
+        }
+    }
+
+    @DeleteMapping("author")
+    public ResponseEntity<String> deleteBookByAuthor(@RequestParam String authorName) {
+
+        boolean deleted = bookService.deleteBookByAuthor(authorName);
+
+        if(deleted) {
+            return ResponseEntity.ok("Book deleted successfully");
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found");
+        }
+    }
+
+    @DeleteMapping("category")
+    public ResponseEntity<String> deleteBookByCategory(@RequestParam String category) {
+
+        boolean deleted = bookService.deleteBookByCategory(category);
+
+        if(deleted) {
+            return ResponseEntity.ok("Book is delete successfully");
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found");
         }
     }
 }
