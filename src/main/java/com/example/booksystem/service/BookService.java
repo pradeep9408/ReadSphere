@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -123,5 +125,56 @@ public class BookService {
     public boolean deleteBookByCategory(String category) {
 
         return books.removeIf(book -> book.getCategory() == category);
+    }
+
+    public List<Book> getBooksWithPaginationAndSorting(
+            int page,
+            int size,
+            String sortBy,
+            String direction) {
+
+        Stream<Book> stream = books.stream();
+
+        Comparator<Book> comparator;
+
+        switch (sortBy.toLowerCase()) {
+
+            case "bookname":
+                comparator = Comparator.comparing(Book::getBookName);
+                break;
+
+            case "authorname":
+                comparator = Comparator.comparing(Book::getAuthorName);
+                break;
+
+            case "category":
+                comparator = Comparator.comparing(Book::getCategory);
+                break;
+
+            case "price":
+                comparator = Comparator.comparing(Book::getPrice);
+                break;
+
+            case "quantity":
+                comparator = Comparator.comparing(Book::getQuantity);
+                break;
+
+            case "publishedyear":
+                comparator = Comparator.comparing(Book::getPublishedYear);
+                break;
+
+            default:
+                comparator = Comparator.comparing(Book::getId);
+        }
+
+        if (direction.equalsIgnoreCase("desc")) {
+            comparator = comparator.reversed();
+        }
+
+        return stream
+                .sorted(comparator)
+                .skip((long) page * size)
+                .limit(size)
+                .toList();
     }
 }

@@ -162,4 +162,25 @@ public class BookController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found");
         }
     }
+
+    @GetMapping("/pagination")
+    public ResponseEntity<List<Book>> getBooksWithPagination(
+
+            @RequestParam(defaultValue = "0") int page,
+
+            @RequestParam(defaultValue = "5") int size,
+
+            @RequestParam(defaultValue = "id") String sortBy,
+
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        List<Book> books =
+                bookService.getBooksWithPaginationAndSorting(
+                        page,
+                        size,
+                        sortBy,
+                        direction);
+
+        return ResponseEntity.ok(books);
+    }
 }
