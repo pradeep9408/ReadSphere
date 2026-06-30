@@ -1,5 +1,7 @@
 package com.example.booksystem.service;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import com.example.booksystem.constants.AppConstants;
 import com.example.booksystem.factory.BookFactory;
 import com.example.booksystem.model.Book;
@@ -64,6 +66,7 @@ public class BookService {
         }
     }
 
+    @Cacheable("books")
     public List<Book> getBooks() {
         return books;
     }
@@ -82,6 +85,7 @@ public class BookService {
         return book;
     }
 
+    @Cacheable(value = "bookByAuthor", key = "#authorName")
     public List<Book> getBookByAuthor(String authorName) {
 
         return books.stream()
@@ -91,6 +95,7 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "bookByCategory", key = "#category")
     public List<Book> getBookByCategory(String category) {
 
         return books.stream()
@@ -100,31 +105,60 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable("groupBooksByCategory")
     public Map<String, List<Book>> groupBooksByCategory() {
 
         return books.stream()
                 .collect(Collectors.groupingBy(Book::getCategory));
     }
 
+    @Cacheable("groupBooksByAuthor")
     public Map<String, List<Book>> groupBooksByAuthor() {
 
         return books.stream()
                 .collect(Collectors.groupingBy(Book::getAuthorName));
     }
 
+    @CacheEvict(
+            value = {
+                    "books",
+                    "bookById",
+                    "bookByAuthor",
+                    "bookByCategory"
+            },
+            allEntries = true
+    )
     public boolean deleteBookById(int id) {
 
         return books.removeIf(book -> book.getId() == id);
     }
 
+    @CacheEvict(
+            value = {
+                    "books",
+                    "bookById",
+                    "bookByAuthor",
+                    "bookByCategory"
+            },
+            allEntries = true
+    )
     public boolean deleteBookByAuthor(String authorName) {
 
-        return books.removeIf(book -> book.getAuthorName() == authorName);
+        return books.removeIf(book -> book.getAuthorName().equalsIgnoreCase(authorName));
     }
 
+    @CacheEvict(
+            value = {
+                    "books",
+                    "bookById",
+                    "bookByAuthor",
+                    "bookByCategory"
+            },
+            allEntries = true
+    )
     public boolean deleteBookByCategory(String category) {
 
-        return books.removeIf(book -> book.getCategory() == category);
+        return books.removeIf(book -> book.getCategory().equalsIgnoreCase(category));
     }
 
     public List<Book> getBooksWithPaginationAndSorting(

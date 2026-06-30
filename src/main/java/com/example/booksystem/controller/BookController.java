@@ -1,12 +1,16 @@
 package com.example.booksystem.controller;
 
-import com.example.booksystem.dto.ApiResponse;
+import com.example.booksystem.dto.ErrorResponse;
 import com.example.booksystem.dto.ReportResponse;
+import com.example.booksystem.enums.Role;
 import com.example.booksystem.model.Book;
 import com.example.booksystem.service.BookService;
 import com.example.booksystem.service.ReportService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +26,7 @@ import java.util.Map;
 @Slf4j
 @Validated
 @RequestMapping("books")
+@Tag(name = "Book Controller", description = "APIs for managing books")
 public class BookController {
 
     private final BookService bookService;
@@ -38,6 +43,11 @@ public class BookController {
         return bookService.getBooks();
     }
 
+    @Operation(summary = "Get book by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Book found"),
+            @ApiResponse(responseCode = "404", description = "Book not found")
+    })
     @GetMapping("id")
     public ResponseEntity<?> getBookById(
             @RequestParam
@@ -47,12 +57,17 @@ public class BookController {
         Book book = bookService.getBookById(id);
 
         if(book==null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Book not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Book not found"));
         }
         log.info("Loaded book by id : {} ", id);
         return ResponseEntity.ok(book);
     }
 
+    @Operation(summary = "Get books by author")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Author not found")
+    })
     @GetMapping("author")
     public ResponseEntity<List<Book>> getBookByAuthor(
             @RequestParam
@@ -68,6 +83,11 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
 
+    @Operation(summary = "Get books by category")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
     @GetMapping("category")
     public ResponseEntity<List<Book>> getBookByCategory(
             @RequestParam
@@ -82,6 +102,8 @@ public class BookController {
             log.info("Loaded books by category", category);
             return ResponseEntity.ok(books);
     }
+
+    @Operation(summary = "Group books by category")
     @GetMapping("group/category")
     public ResponseEntity<Map<String, List<Book>>> groupBooksByCategory() {
 
@@ -93,6 +115,8 @@ public class BookController {
         log.info("Loaded books grouped by category", groupedBooks);
         return ResponseEntity.ok(groupedBooks);
     }
+
+    @Operation(summary = "Group books by author")
     @GetMapping("group/author")
     public ResponseEntity<Map<String, List<Book>>> groupBooksByAuthor() {
 
@@ -104,6 +128,12 @@ public class BookController {
         log.info("Loaded books grouped by author : {} ", groupedAuthorBooks);
         return ResponseEntity.ok(groupedAuthorBooks);
     }
+
+    @Operation(summary = "Generate report file")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Report generated successfully"),
+            @ApiResponse(responseCode = "500", description = "Failed to generate report")
+    })
     @GetMapping("report")
     public ResponseEntity<String> generateReport() {
         try {
@@ -116,6 +146,7 @@ public class BookController {
         }
     }
 
+    @Operation(summary = "Get report in JSON format")
     @GetMapping("report/json")
     public ResponseEntity<ReportResponse> getReport() {
 
@@ -123,46 +154,94 @@ public class BookController {
                 reportService.getReport());
     }
 
+    @Operation(summary = "Delete book by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Book deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Only admin can delete books"),
+            @ApiResponse(responseCode = "404", description = "Book not found")
+    })
     @DeleteMapping("id")
-    public ResponseEntity<String> deleteBookById(@RequestParam int id) {
+    public ResponseEntity<String> deleteBookById(
+            @RequestHeader("role") String role,
+            @RequestParam int id) {
+
+        Role userRole = Role.valueOf(role.toUpperCase());
+
+        if (userRole != Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only admins can delete books");
+        }
 
         boolean deleted = bookService.deleteBookById(id);
 
-        if(deleted) {
+        if (deleted) {
+            return ResponseEntity.ok("Book deleted successfully");
+        }
 
-            return ResponseEntity.ok("Book Deleted successfully");
-        }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found");
-        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Book not found");
     }
 
+    @Operation(summary = "Delete books by author")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Books deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Only admin can delete books"),
+            @ApiResponse(responseCode = "404", description = "Author not found")
+    })
     @DeleteMapping("author")
-    public ResponseEntity<String> deleteBookByAuthor(@RequestParam String authorName) {
+    public ResponseEntity<String> deleteBookByAuthor(
+            @RequestHeader("role") String role,
+            @RequestParam String authorName) {
+
+        Role userRole = Role.valueOf(role.toUpperCase());
+
+        if (userRole != Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only admins can delete books");
+        }
 
         boolean deleted = bookService.deleteBookByAuthor(authorName);
 
-        if(deleted) {
-            return ResponseEntity.ok("Book deleted successfully");
+        if (deleted) {
+            return ResponseEntity.ok("Books deleted successfully");
         }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found");
-        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Author not found");
     }
 
+    @Operation(summary = "Delete books by category")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Books deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Only admin can delete books"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
     @DeleteMapping("category")
-    public ResponseEntity<String> deleteBookByCategory(@RequestParam String category) {
+    public ResponseEntity<String> deleteBookByCategory(
+            @RequestHeader("role") String role,
+            @RequestParam String category) {
+
+        Role userRole = Role.valueOf(role.toUpperCase());
+
+        if (userRole != Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only admins can delete books");
+        }
 
         boolean deleted = bookService.deleteBookByCategory(category);
 
-        if(deleted) {
-            return ResponseEntity.ok("Book is delete successfully");
+        if (deleted) {
+            return ResponseEntity.ok("Books deleted successfully");
         }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found");
-        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Category not found");
     }
 
+    @Operation(summary = "Get books with pagination and sorting")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Books retrieved successfully")
+    })
     @GetMapping("/pagination")
     public ResponseEntity<List<Book>> getBooksWithPagination(
 
