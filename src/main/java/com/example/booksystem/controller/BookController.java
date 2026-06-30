@@ -251,14 +251,14 @@ public class BookController {
 
             @RequestParam(defaultValue = "id") String sortBy,
 
-            @RequestParam(defaultValue = "asc") String direction) {
+            @RequestParam(defaultValue = "asc") String order) {
 
         List<Book> books =
                 bookService.getBooksWithPaginationAndSorting(
                         page,
                         size,
                         sortBy,
-                        direction);
+                        order);
 
         return ResponseEntity.ok(books);
     }

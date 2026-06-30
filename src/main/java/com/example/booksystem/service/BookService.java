@@ -165,7 +165,7 @@ public class BookService {
             int page,
             int size,
             String sortBy,
-            String direction) {
+            String order) {
 
         Stream<Book> stream = books.stream();
 
@@ -201,7 +201,7 @@ public class BookService {
                 comparator = Comparator.comparing(Book::getId);
         }
 
-        if (direction.equalsIgnoreCase("desc")) {
+        if (order.equalsIgnoreCase("desc")) {
             comparator = comparator.reversed();
         }
 
